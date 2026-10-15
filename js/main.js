@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
-// Indirizzo a cui arrivano le prenotazioni: sostituiscilo con l'email di Laura.
-const CONTATTO = 'ciao@example.com';
+// Indirizzo a cui arrivano le prenotazioni.
+const CONTATTO = 'kamicustomwear@gmail.com';
 
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const { gsap, ScrollTrigger, Lenis } = window;
@@ -77,7 +77,7 @@ const heroScroll = { p: 0 };
   key.position.set(-3, 2, 5);
   const rim = new THREE.DirectionalLight(0xb0445b, 3); // bordeaux
   rim.position.set(4, 1, -3);
-  const fill = new THREE.DirectionalLight(0x8fa3bc, 1.2); // dusty blue
+  const fill = new THREE.DirectionalLight(0x8fcfef, 1.2); // celeste
   fill.position.set(3, -2, 3);
   scene.add(key, rim, fill);
 
