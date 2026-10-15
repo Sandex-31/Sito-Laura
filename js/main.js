@@ -21,6 +21,8 @@ document.querySelectorAll('a[href^="#"]').forEach((a) => {
     const target = document.querySelector(a.getAttribute('href'));
     if (!target) return;
     if (a.dataset.mode) setMode(a.dataset.mode);
+    const idea = document.querySelector('textarea[name="idea"]');
+    if (a.dataset.idea && !idea.value) idea.value = a.dataset.idea;
     if (lenis) { e.preventDefault(); lenis.scrollTo(target, { duration: 1.4 }); }
   });
 });
@@ -75,9 +77,9 @@ const heroScroll = { p: 0 };
   scene.add(new THREE.AmbientLight(0xffffff, 1.6));
   const key = new THREE.DirectionalLight(0xffe6d6, 1.6); // luce calda da lampada
   key.position.set(-3, 2, 5);
-  const rim = new THREE.DirectionalLight(0x2a7fb0, 3); // blu
+  const rim = new THREE.DirectionalLight(0xcee5ff, 3); // azzurro
   rim.position.set(4, 1, -3);
-  const fill = new THREE.DirectionalLight(0x8fcfef, 1.2); // celeste
+  const fill = new THREE.DirectionalLight(0xcee5ff, 1.2); // azzurro
   fill.position.set(3, -2, 3);
   scene.add(key, rim, fill);
 
@@ -232,29 +234,66 @@ const heroScroll = { p: 0 };
   }
 }
 
-/* ---------- Galleria ad anello ---------- */
-(async function ringScene() {
+/* ---------- Lavori: cartelle che si aprono in un anello ---------- */
+// Ogni foto ondeggia come stoffa; aperta la cartella si curva sull'anello,
+// si avvicina quando è al centro e si piega con la velocità di rotazione.
+const RING_VERT = `
+  uniform mat3 uvTransform;
+  uniform float uTime, uVel, uFocus, uPhase, uCurve, uR;
+  varying vec2 vUv, vRaw;
+  varying float vShade;
+  void main() {
+    vRaw = uv;
+    vUv = (uvTransform * vec3(uv, 1.0)).xy;
+    vec3 p = position;
+    float ang = p.x / uR;
+    p = mix(p, vec3(uR * sin(ang), p.y, uR * cos(ang) - uR), uCurve);
+    float arc = sin(uv.x * 3.14159);
+    float wave = sin(uv.y * 4.0 + uTime * 1.3 + uPhase) * arc;
+    p.z += wave * 0.04 * (1.0 + abs(uVel) * 6.0);
+    p.y += arc * uVel * 0.22 + sin(uTime * 0.7 + uPhase) * 0.05 * (1.0 - uFocus);
+    vShade = 0.9 + 0.1 * wave;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
+  }`;
+const RING_FRAG = `
+  uniform sampler2D map;
+  uniform float uTime, uVel, uFocus, uDim, uAlpha;
+  varying vec2 vUv, vRaw;
+  varying float vShade;
+  void main() {
+    vec2 off = vec2(uVel * 0.009, 0.0);
+    vec3 c = vec3(texture2D(map, vUv + off).r, texture2D(map, vUv).g, texture2D(map, vUv - off).b);
+    // Riflesso che attraversa lentamente l'immagine al centro.
+    float sweep = fract(uTime * 0.12) * 3.0 - 1.0;
+    c += uFocus * 0.07 * smoothstep(0.18, 0.0, abs(vRaw.x + vRaw.y * 0.4 - sweep));
+    gl_FragColor = vec4(c * uDim * vShade, uAlpha);
+    #include <colorspace_fragment>
+  }`;
+
+(async function worksScene() {
+  const section = document.querySelector('.works');
   const canvas = document.getElementById('ring3d');
-  const items = document.querySelectorAll('.works-list li');
-  const count = document.querySelector('.works-count .now');
-  const n = items.length;
-  items[0].classList.add('on');
+  const foldersEl = section.querySelector('.folders');
+  const folderBtns = [...foldersEl.querySelectorAll('button')];
+  const viewer = section.querySelector('.viewer');
+  const items = [...section.querySelectorAll('.works-list li')];
+  const groupLabel = viewer.querySelector('.viewer-group');
+  const nowEl = viewer.querySelector('.now');
+  const totEl = viewer.querySelector('.tot');
 
   const renderer = makeRenderer(canvas);
-  if (!renderer) { items.forEach((li) => li.classList.add('on')); return; }
+  if (!renderer) {
+    foldersEl.hidden = true;
+    viewer.hidden = false;
+    items.forEach((li) => li.classList.add('on'));
+    return;
+  }
 
-  // Il pin va creato prima di ogni await: i trigger più in basso devono contarne lo spazio.
-  let target = 0, current = 0, active = 0;
-  ScrollTrigger.create({
-    trigger: '.works', pin: '.works-pin', start: 'top top',
-    end: () => '+=' + innerHeight * (n - 1) * 0.75,
-    scrub: true,
-    onUpdate: (st) => { target = st.progress * (n - 1); },
-  });
-
-  const [worn, side, fronte, retro] = await Promise.all(
-    ['assets/indossati.jpg', 'assets/dettaglio-fianco.jpg', 'assets/fronte.jpg', 'assets/retro.jpg'].map(load),
-  );
+  const [worn, side, fronte, retro, ...nero] = await Promise.all([
+    'assets/indossati.jpg', 'assets/dettaglio-fianco.jpg', 'assets/fronte.jpg', 'assets/retro.jpg',
+    'assets/modello-gira.jpg', 'assets/modello-gamba.jpg', 'assets/modello-tasca.jpg', 'assets/modello-calcio.jpg',
+    'assets/modello-retro.jpg', 'assets/modello-sorriso.jpg', 'assets/nero-braccio.jpg',
+  ].map(load));
   // Ritaglio in pixel sull'immagine originale, formato 3:4.
   const crop = (tex, x, y, w, h) => {
     const t = tex.clone();
@@ -264,32 +303,37 @@ const heroScroll = { p: 0 };
     t.needsUpdate = true;
     return t;
   };
-  const maps = [
-    worn,
-    crop(fronte, 160, 400, 330, 440),   // Sukuna
-    side,
-    crop(fronte, 620, 900, 400, 533),   // glifi
-    retro,
-    crop(fronte, 0, 97, 1055, 1407),    // paio intero
+  // Stesso ordine dei <li> di ogni cartella; la prima foto è la copertina.
+  const groups = [
+    [crop(fronte, 0, 97, 1055, 1407), crop(fronte, 160, 400, 330, 440), side, crop(fronte, 620, 900, 400, 533), retro, worn],
+    nero,
   ];
+  const itemsBy = groups.map((_, g) => items.filter((li) => Number(li.dataset.group) === g));
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 60);
   const R = 4.2, step = 0.5, CW = 1.5, CH = 2;
-  const ring = new THREE.Group();
-  const mats = maps.map((map, i) => {
-    const g = new THREE.PlaneGeometry(CW, CH, 24, 1);
-    const p = g.attributes.position;
-    for (let k = 0; k < p.count; k++) {
-      const a = i * step + p.getX(k) / R;
-      p.setXYZ(k, R * Math.sin(a), p.getY(k), R * Math.cos(a));
-    }
-    const m = new THREE.MeshBasicMaterial({ map, side: THREE.DoubleSide });
-    ring.add(new THREE.Mesh(g, m));
-    return m;
-  });
-  scene.add(ring);
+  const geo = new THREE.PlaneGeometry(CW, CH, 24, 12);
+  const cards = [];
+  groups.forEach((maps, g) => maps.forEach((map, k) => {
+    map.updateMatrix();
+    const mat = new THREE.ShaderMaterial({
+      uniforms: {
+        map: { value: map }, uvTransform: { value: map.matrix }, uR: { value: R }, uCurve: { value: 0 },
+        uTime: { value: 0 }, uVel: { value: 0 }, uFocus: { value: 0 }, uDim: { value: 1 }, uAlpha: { value: 0 },
+        uPhase: { value: (g * 6 + k) * 1.7 },
+      },
+      vertexShader: RING_VERT, fragmentShader: RING_FRAG,
+      side: THREE.DoubleSide, transparent: true,
+    });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.userData = { g, k };
+    scene.add(mesh);
+    // Stato corrente: parte sotto e trasparente, così le cartelle salgono all'arrivo.
+    cards.push({ mesh, g, k, n: maps.length, s: { x: 0, y: -3, z: R, ry: 0, rz: 0, sc: 0.8, curve: 0, alpha: 0, dim: 1, focus: 0 } });
+  }));
 
+  let spacing = 2, stackScale = 0.8;
   function resize() {
     const w = canvas.clientWidth, h = canvas.clientHeight;
     renderer.setSize(w, h, false);
@@ -298,10 +342,12 @@ const heroScroll = { p: 0 };
     const tan = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
     const dist = Math.max(CH / (0.58 * 2 * tan), CW / (0.62 * 2 * tan * camera.aspect));
     camera.position.set(0, 0, R + dist);
+    const visH = 2 * dist * tan, visW = visH * camera.aspect;
+    spacing = visW / groups.length; // centri delle pile allineati alle etichette sotto
+    stackScale = Math.min(0.85, (spacing * 0.6) / CW, (visH * 0.44) / CH);
   }
   addEventListener('resize', resize);
   resize();
-
 
   const mouse = { x: 0, y: 0 };
   if (matchMedia('(pointer: fine)').matches) addEventListener('pointermove', (e) => {
@@ -309,25 +355,153 @@ const heroScroll = { p: 0 };
     mouse.y = e.clientY / innerHeight - 0.5;
   });
 
+  let open = -1, hover = -1, target = 0, current = 0, vel = 0, active = -1, since = -10;
+  const clock = new THREE.Clock();
+  const last = () => (open < 0 ? 0 : groups[open].length - 1);
+  const go = (k) => { target = THREE.MathUtils.clamp(k, 0, last()); };
+
+  function showItem(idx) {
+    items.forEach((li) => li.classList.remove('on'));
+    itemsBy[open][idx].classList.add('on');
+    nowEl.textContent = idx + 1;
+    active = idx;
+  }
+  function openGroup(g, fromKeyboard) {
+    open = g; hover = -1; target = current = 0; vel = 0;
+    since = clock.getElapsedTime();
+    groupLabel.textContent = folderBtns[g].querySelector('.f-name').textContent;
+    totEl.textContent = groups[g].length;
+    showItem(0);
+    foldersEl.hidden = true;
+    viewer.hidden = false;
+    if (fromKeyboard) viewer.querySelector('.next').focus({ preventScroll: true });
+  }
+  function closeGroup() {
+    const g = open;
+    const hadFocus = viewer.contains(document.activeElement);
+    open = -1;
+    since = clock.getElapsedTime();
+    viewer.hidden = true;
+    foldersEl.hidden = false;
+    if (hadFocus) folderBtns[g].focus({ preventScroll: true });
+  }
+
+  folderBtns.forEach((b, g) => {
+    b.addEventListener('click', (e) => openGroup(g, e.detail === 0));
+    b.addEventListener('pointerenter', () => { hover = g; });
+    b.addEventListener('pointerleave', () => { hover = -1; });
+    b.addEventListener('focus', () => { hover = g; });
+    b.addEventListener('blur', () => { hover = -1; });
+  });
+  viewer.querySelector('.prev').addEventListener('click', () => go(Math.round(target) - 1));
+  viewer.querySelector('.next').addEventListener('click', () => go(Math.round(target) + 1));
+  viewer.querySelector('.shut').addEventListener('click', closeGroup);
+
   let visible = false;
-  whenVisible(document.querySelector('.works'), (v) => { visible = v; });
+  whenVisible(section, (v) => { visible = v; });
+  addEventListener('keydown', (e) => {
+    if (open < 0 || !visible) return;
+    if (e.key === 'ArrowRight') go(Math.round(target) + 1);
+    else if (e.key === 'ArrowLeft') go(Math.round(target) - 1);
+    else if (e.key === 'Escape') closeGroup();
+  });
+
+  // Clic sulle foto: apre la cartella o porta al centro la foto cliccata; trascinando si sfoglia.
+  const ray = new THREE.Raycaster(), ptr = new THREE.Vector2();
+  const pick = (e) => {
+    const r = canvas.getBoundingClientRect();
+    ptr.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+    ray.setFromCamera(ptr, camera);
+    const hit = ray.intersectObjects(cards.filter((c) => c.s.alpha > 0.5).map((c) => c.mesh))[0];
+    return hit ? hit.object.userData : null;
+  };
+  let down = null;
+  const endDrag = () => { if (down && down.drag) go(Math.round(target)); down = null; };
+  canvas.addEventListener('pointerdown', (e) => { down = { x: e.clientX, t: target, drag: false }; });
+  canvas.addEventListener('pointermove', (e) => {
+    if (down) {
+      const dx = e.clientX - down.x;
+      if (open >= 0 && Math.abs(dx) > 5) {
+        down.drag = true;
+        target = THREE.MathUtils.clamp(down.t - dx / (canvas.clientWidth * 0.22), 0, last());
+      }
+      return;
+    }
+    if (e.pointerType !== 'mouse') return;
+    const hit = pick(e);
+    if (open < 0) hover = hit ? hit.g : -1;
+    canvas.style.cursor = hit && (open < 0 || hit.g === open) ? 'pointer' : '';
+  });
+  canvas.addEventListener('pointerup', (e) => {
+    if (!down) return;
+    if (down.drag) return endDrag();
+    down = null;
+    const hit = pick(e);
+    if (!hit) return;
+    if (open < 0) openGroup(hit.g, false);
+    else if (hit.g === open) go(hit.k);
+  });
+  canvas.addEventListener('pointercancel', endDrag);
+  canvas.addEventListener('pointerleave', () => { endDrag(); if (open < 0) hover = -1; });
+
+  // Dove deve stare ogni foto: in pila nella sua cartella, sull'anello, o fuori scena.
+  const aim = { x: 0, y: 0, z: 0, ry: 0, rz: 0, sc: 1, curve: 0, alpha: 1, dim: 1, focus: 0 };
+  function place(c) {
+    const cx = (c.g - (groups.length - 1) / 2) * spacing;
+    if (open === c.g) {
+      const d = Math.abs(c.k - current);
+      const f = 1 - Math.min(1, d) ** 2;
+      const a = (c.k - current) * step, r = R + f * 0.35;
+      Object.assign(aim, {
+        x: r * Math.sin(a), y: 0, z: r * Math.cos(a), ry: a, rz: 0, sc: 1, curve: 1,
+        alpha: 1 - THREE.MathUtils.smoothstep(d, 2.2, 3.6), dim: 1 - Math.min(1, d) * 0.85, focus: f,
+      });
+    } else if (open >= 0) {
+      Object.assign(aim, { x: cx, y: -4, z: R - 1, ry: 0, rz: 0, sc: stackScale, curve: 0, alpha: 0, dim: 1, focus: 0 });
+    } else {
+      const fan = hover === c.g ? 1 : 0;
+      const o = c.k - (c.n - 1) / 2;
+      Object.assign(aim, {
+        x: cx + o * (0.03 + fan * 0.12) * stackScale,
+        y: 0.04 + (c.k * 0.025 + fan * 0.08) * stackScale * 2,
+        z: R - c.k * 0.06, ry: 0, rz: -o * (0.035 + fan * 0.05), sc: stackScale, curve: 0, alpha: 1,
+        dim: (1 - c.k * 0.08) * (hover >= 0 && hover !== c.g ? 0.55 : 1), focus: 0,
+      });
+    }
+  }
 
   gsap.ticker.add(() => {
     if (!visible) return;
+    const t = clock.getElapsedTime();
+    const prev = current;
     current += (target - current) * (reduce ? 1 : 0.09);
-    ring.rotation.y = -current * step;
-    ring.rotation.x = reduce ? 0 : mouse.y * 0.06;
-    camera.position.x = reduce ? 0 : mouse.x * 0.3;
-    camera.lookAt(0, 0, R);
-    mats.forEach((m, i) => m.color.setScalar(1 - Math.min(1, Math.abs(i - current)) * 0.88));
-
-    const idx = Math.min(n - 1, Math.max(0, Math.round(current)));
-    if (idx !== active) {
-      items[active].classList.remove('on');
-      items[idx].classList.add('on');
-      count.textContent = idx + 1;
-      active = idx;
+    vel += (THREE.MathUtils.clamp((current - prev) * 7, -1, 1) - vel) * 0.12;
+    // Subito dopo un'apertura o chiusura le foto partono una dopo l'altra.
+    const stagger = Math.max(0, 1 - (t - since) / 1.4);
+    cards.forEach((c) => {
+      place(c);
+      const k = reduce ? 1 : 0.09 / (1 + c.k * 0.35 * stagger);
+      const s = c.s;
+      for (const key in aim) s[key] += (aim[key] - s[key]) * k;
+      c.mesh.visible = s.alpha > 0.01;
+      c.mesh.position.set(s.x, s.y, s.z);
+      c.mesh.rotation.set(0, s.ry, s.rz);
+      c.mesh.scale.setScalar(s.sc);
+      const u = c.mesh.material.uniforms;
+      u.uTime.value = reduce ? 0 : t;
+      u.uVel.value = reduce || open !== c.g ? 0 : vel;
+      u.uCurve.value = s.curve;
+      u.uAlpha.value = s.alpha;
+      u.uDim.value = s.dim;
+      u.uFocus.value = s.focus;
+    });
+    if (open >= 0) {
+      const idx = Math.min(last(), Math.max(0, Math.round(current)));
+      if (idx !== active) showItem(idx);
     }
+    camera.position.x = reduce ? 0 : mouse.x * 0.3;
+    camera.position.y = reduce ? 0 : -mouse.y * 0.15;
+    camera.lookAt(0, 0, R);
     renderer.render(scene, camera);
   });
 })();
@@ -362,6 +536,20 @@ if (!reduce) {
   });
 }
 
+// Paio nero: le foto si aprono dal basso e le colonne scorrono a velocità diverse.
+if (!reduce) {
+  gsap.utils.toArray('.mosaic figure').forEach((fig) => {
+    gsap.timeline({ scrollTrigger: { trigger: fig, start: 'top 88%' } })
+      .from(fig, { clipPath: 'inset(100% 0 0 0)', duration: 1.3, ease: 'expo.out' })
+      .from(fig.querySelector('img'), { scale: 1.35, duration: 1.6, ease: 'expo.out' }, 0);
+  });
+  if (innerWidth > 900) {
+    document.querySelectorAll('.mosaic .col').forEach((col) => {
+      gsap.to(col, { y: -Number(col.dataset.speed), ease: 'none', scrollTrigger: { trigger: '.mosaic', start: 'top bottom', end: 'bottom top', scrub: true } });
+    });
+  }
+}
+
 /* ---------- Prenotazione ---------- */
 const form = document.getElementById('booking');
 const done = form.querySelector('.done');
@@ -376,6 +564,22 @@ function setMode(mode) {
 }
 form.querySelectorAll('input[name="mode"]').forEach((r) => r.addEventListener('change', () => setMode(r.value)));
 
+// Taglie per paese: la richiesta arriva già con il sistema indicato (es. "EU 38").
+const TAGLIE = {
+  IT: ['38', '40', '42', '44', '46', '48', '50', '52'],
+  EU: ['32', '34', '36', '38', '40', '42', '44', '46'],
+  US: ['W24', 'W25', 'W26', 'W27', 'W28', 'W29', 'W30', 'W31', 'W32', 'W34'],
+  UK: ['4', '6', '8', '10', '12', '14', '16', '18'],
+};
+const sizeList = form.querySelector('.size-list');
+function renderSizes(sys) {
+  const chip = (value, text, cls = '') => `<label${cls}><input type="radio" name="taglia" value="${value}"><span>${text}</span></label>`;
+  sizeList.innerHTML = TAGLIE[sys].map((t) => chip(`${sys} ${t}`, t)).join('')
+    + chip('Da definire', 'Non lo so, ne parliamo', ' class="unsure"');
+}
+form.querySelectorAll('input[name="sistema"]').forEach((r) => r.addEventListener('change', () => renderSizes(r.value)));
+renderSizes(form.querySelector('input[name="sistema"]:checked').value);
+
 form.addEventListener('input', (e) => {
   if (e.target.getAttribute('aria-invalid') === 'true' && e.target.checkValidity()) {
     e.target.removeAttribute('aria-invalid');
@@ -383,8 +587,11 @@ form.addEventListener('input', (e) => {
   }
 });
 
-form.addEventListener('submit', (e) => {
+// Invio diretto tramite FormSubmit: nessuna app di posta, la richiesta arriva a CONTATTO.
+const sendBtn = form.querySelector('button[type="submit"]');
+form.addEventListener('submit', async (e) => {
   e.preventDefault();
+  if (sendBtn.disabled) return;
   let firstBad = null;
   form.querySelectorAll('[required]').forEach((input) => {
     const ok = input.value.trim() !== '' && input.checkValidity();
@@ -396,18 +603,41 @@ form.addEventListener('submit', (e) => {
   if (firstBad) { firstBad.focus(); return; }
 
   const d = Object.fromEntries(new FormData(form));
+  if (d._honey) return;
   const custom = d.mode === 'custom';
-  const subject = custom ? 'Richiesta design su misura' : 'Prenotazione: il paio Jujutsu';
-  const lines = [
-    `Nome: ${d.nome}`,
-    `Email: ${d.email}`,
+  const payload = {
+    _subject: custom ? 'Richiesta design su misura' : `Prenotazione: ${d.paio}`,
+    _replyto: d.email,
+    _template: 'table',
+    Nome: d.nome,
+    Email: d.email,
     ...(custom
-      ? [`Capo: ${d.capo}`, `Capo proprio: ${d.capo_proprio}`, `Idea: ${d.idea || '-'}`]
-      : [`Taglia: ${d.taglia || 'da definire'}`]),
-    `Note: ${d.note || '-'}`,
-  ];
-  location.href = `mailto:${CONTATTO}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(lines.join('\n'))}`;
-  done.textContent = custom
-    ? 'Richiesta pronta nella tua app di posta. Allega le immagini di riferimento e premi invia.'
-    : 'Richiesta pronta nella tua app di posta. Premi invia e ti rispondo per confermare.';
+      ? { Capo: d.capo, 'Capo proprio': d.capo_proprio, Idea: d.idea || '-' }
+      : { Paio: d.paio, Taglia: d.taglia || 'Da definire' }),
+    Note: d.note || '-',
+  };
+
+  sendBtn.disabled = true;
+  sendBtn.textContent = 'Invio in corso…';
+  done.textContent = '';
+  try {
+    const res = await fetch(`https://formsubmit.co/ajax/${CONTATTO}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const out = await res.json().catch(() => ({}));
+    if (!res.ok || String(out.success) !== 'true') throw new Error(out.message || res.status);
+    form.reset();
+    renderSizes(form.querySelector('input[name="sistema"]:checked').value);
+    setMode(custom ? 'custom' : 'pezzo');
+    done.textContent = custom
+      ? 'Richiesta inviata. Ti scrivo presto per parlare della tua idea.'
+      : 'Richiesta inviata. Ti scrivo presto per confermare taglia, tempi e prezzo.';
+  } catch {
+    done.innerHTML = `Invio non riuscito. Riprova tra poco o scrivimi a <a href="mailto:${CONTATTO}">${CONTATTO}</a>.`;
+  } finally {
+    sendBtn.disabled = false;
+    sendBtn.textContent = 'Invia la richiesta';
+  }
 });

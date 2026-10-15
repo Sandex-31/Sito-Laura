@@ -51,7 +51,7 @@
       <div class="hero-copy">
         <h1 id="hero-title">
           <span class="line"><span>Jeans dipinti</span></span>
-          <span class="line"><span>a mano, uno</span></span>
+          <span class="line"><span><em>a mano</em>, uno</span></span>
           <span class="line"><span>alla volta.</span></span>
         </h1>
         <p class="lede">Disegno a pennello e inchiostro direttamente sul denim: personaggi, koi, glifi, piccoli segni sulle tasche. Scegli un paio già finito o chiedine uno pensato per te.</p>
@@ -68,23 +68,44 @@
       </div>
     </section>
 
-    <!-- Galleria 3D ad anello, guidata dallo scroll -->
+    <!-- Lavori: una cartella per capo, si apre in un anello 3D -->
     <section class="works" id="lavori" aria-labelledby="works-title">
       <div class="works-pin">
         <div class="works-head">
           <h2 id="works-title">Lavori finiti</h2>
-          <p>Ogni disegno nasce a mano, direttamente sul capo. Scorri per girare la galleria.</p>
+          <p>Ogni disegno nasce a mano, direttamente sul capo. Apri un capo per sfogliare tutte le sue foto.</p>
         </div>
         <canvas id="ring3d" aria-hidden="true"></canvas>
-        <ol class="works-list">
-          <li><h3>Indossati</h3><p>Il paio Jujutsu per strada: Sukuna sulla coscia, glifi lungo la gamba.</p></li>
-          <li><h3>Sukuna</h3><p>Ritratto a linea sottile, con le mani giunte e i segni sul viso.</p></li>
-          <li><h3>Koi sul fianco</h3><p>Due carpe a pennello, una piena e una solo contorno.</p></li>
-          <li><h3>Glifi</h3><p>Una colonna di segni a pennello pieno che scende fino all'orlo.</p></li>
-          <li><h3>Tasche</h3><p>Un profilo a linea continua e un dado con gli occhi al posto dei punti.</p></li>
-          <li><h3>Il paio intero</h3><p>Tutti i disegni insieme, sul davanti.</p></li>
-        </ol>
-        <p class="works-count" aria-hidden="true"><span class="now">1</span> di 6</p>
+        <div class="folders" role="group" aria-label="Capi">
+          <button type="button" data-group="0"><span class="f-name">Il paio Jujutsu</span><span class="f-n">6 foto</span></button>
+          <button type="button" data-group="1"><span class="f-name">Il paio nero</span><span class="f-n">7 foto</span></button>
+        </div>
+        <div class="viewer" hidden>
+          <div class="viewer-text">
+            <p class="viewer-group"></p>
+            <ol class="works-list">
+              <li data-group="0"><h3>Il paio intero</h3><p>Tutti i disegni insieme, sul davanti.</p></li>
+              <li data-group="0"><h3>Sukuna</h3><p>Ritratto a linea sottile, con le mani giunte e i segni sul viso.</p></li>
+              <li data-group="0"><h3>Koi sul fianco</h3><p>Due carpe a pennello, una piena e una solo contorno.</p></li>
+              <li data-group="0"><h3>Glifi</h3><p>Una colonna di segni a pennello pieno che scende fino all'orlo.</p></li>
+              <li data-group="0"><h3>Tasche</h3><p>Un profilo a linea continua e un dado con gli occhi al posto dei punti.</p></li>
+              <li data-group="0"><h3>Indossati</h3><p>Il paio Jujutsu per strada: Sukuna sulla coscia, glifi lungo la gamba.</p></li>
+              <li data-group="1"><h3>Indossati</h3><p>Il paio nero addosso: totem e simboli lungo la gamba sinistra.</p></li>
+              <li data-group="1"><h3>Braccio e volto</h3><p>Da vicino, il braccio meccanico e il volto in cornice sulla gamba destra.</p></li>
+              <li data-group="1"><h3>Mano in tasca</h3><p>Gamba larga che cade dritta fino alle scarpe.</p></li>
+              <li data-group="1"><h3>In movimento</h3><p>Il denim si piega, i segni bianchi restano netti.</p></li>
+              <li data-group="1"><h3>Il retro</h3><p>Lame incrociate e un segno geometrico sulle tasche.</p></li>
+              <li data-group="1"><h3>Contro il muro</h3><p>Il paio completo, dalla vita all'orlo.</p></li>
+              <li data-group="1"><h3>Braccio</h3><p>Il braccio scheletrico e meccanico, tratto per tratto.</p></li>
+            </ol>
+          </div>
+          <div class="viewer-nav">
+            <button type="button" class="prev" aria-label="Foto precedente">&larr;</button>
+            <p class="works-count"><span class="now">1</span> di <span class="tot">6</span></p>
+            <button type="button" class="next" aria-label="Foto successiva">&rarr;</button>
+            <button type="button" class="shut">Chiudi</button>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -103,6 +124,32 @@
           <div><dt>Taglia e prezzo</dt><dd>Su richiesta, rispondo entro pochi giorni</dd></div>
         </dl>
         <a class="btn btn-solid" href="#prenota" data-mode="pezzo">Prenota questo paio</a>
+      </div>
+    </section>
+
+    <!-- Il paio nero -->
+    <section class="noir" id="nero" aria-labelledby="noir-title">
+      <div class="noir-head">
+        <h2 id="noir-title">Linea bianca<br><em>su nero</em></h2>
+        <div class="noir-copy">
+          <p>Jeans neri a gamba larga, dipinti a pennello sottile. Un braccio meccanico, un volto classico, simboli e un totem che corre lungo la gamba: ogni segno è tracciato a mano, uno dopo l'altro.</p>
+          <p class="noir-note">È un pezzo unico e non è in vendita, ma puoi chiederne una versione tua, con le modifiche che vuoi.</p>
+          <a class="btn btn-line" href="#prenota" data-mode="custom" data-idea="Vorrei una versione del paio nero, con queste modifiche: ">Chiedi la tua versione</a>
+        </div>
+      </div>
+      <div class="mosaic">
+        <div class="col" data-speed="0">
+          <figure><img src="assets/modello-gira.jpg" alt="Ragazzo con camicia nera e i jeans neri dipinti, totem e simboli bianchi lungo la gamba" loading="lazy" width="900" height="1200"><figcaption>Indossati</figcaption></figure>
+          <figure><img src="assets/modello-retro.jpg" alt="Retro dei jeans neri indossati, con lame incrociate sulla tasca" loading="lazy" width="900" height="1200"><figcaption>Il retro</figcaption></figure>
+        </div>
+        <div class="col" data-speed="140">
+          <figure><img src="assets/nero-braccio.jpg" alt="Braccio scheletrico e meccanico dipinto lungo la gamba" loading="lazy" width="900" height="1200"><figcaption>Braccio meccanico</figcaption></figure>
+          <figure><img src="assets/modello-calcio.jpg" alt="Il ragazzo alza una gamba contro il muro, i disegni bianchi seguono la piega del denim" loading="lazy" width="900" height="1200"><figcaption>In movimento</figcaption></figure>
+        </div>
+        <div class="col" data-speed="60">
+          <figure><img src="assets/modello-tasca.jpg" alt="Jeans neri a gamba larga indossati, mano in tasca" loading="lazy" width="900" height="1200"><figcaption>Gamba larga</figcaption></figure>
+          <figure><img src="assets/nero-volto.jpg" alt="Profilo di un volto classico dentro una cornice tratteggiata" loading="lazy" width="900" height="1200"><figcaption>Volto in cornice</figcaption></figure>
+        </div>
       </div>
     </section>
 
@@ -129,7 +176,7 @@
         <div class="step-stage" aria-hidden="true">
           <figure class="duo on"><img src="assets/dett-profilo.jpg" alt=""></figure>
           <figure class="duo"><img src="assets/dett-dado.jpg" alt=""></figure>
-          <figure class="duo"><img src="assets/dett-koi.jpg" alt=""></figure>
+          <figure class="duo"><img src="assets/nero-braccio.jpg" alt=""></figure>
           <figure><img src="assets/indossati.jpg" alt=""></figure>
         </div>
       </div>
@@ -148,10 +195,10 @@
     <section class="book" id="prenota" aria-labelledby="book-title">
       <div class="book-head">
         <h2 id="book-title">Prenota</h2>
-        <p>Compila il modulo: si apre la tua app di posta con la richiesta già scritta. Ti rispondo per confermare disponibilità, tempi e prezzo.</p>
+        <p>Compila il modulo e premi invia: la richiesta mi arriva subito. Ti rispondo per confermare disponibilità, tempi e prezzo.</p>
         <div class="book-visual" aria-hidden="true">
           <figure class="duo blue v-pezzo"><img src="assets/dett-sukuna.jpg" alt=""></figure>
-          <figure class="duo blue v-custom"><img src="assets/dett-glifi.jpg" alt=""></figure>
+          <figure class="duo blue v-custom"><img src="assets/nero-volto.jpg" alt=""></figure>
         </div>
       </div>
 
@@ -171,13 +218,21 @@
             <input name="email" type="email" autocomplete="email" required>
             <small class="err" hidden>Inserisci un'email valida, così posso risponderti.</small></label>
 
-          <label class="field only-pezzo"><span>Taglia in vita</span>
-            <select name="taglia">
-              <option value="">Scegli la taglia</option>
-              <option>W24</option><option>W25</option><option>W26</option><option>W27</option>
-              <option>W28</option><option>W29</option><option>W30</option><option>W31</option>
-              <option>W32</option><option>W34</option><option>Non lo so, ne parliamo</option>
+          <label class="field only-pezzo wide"><span>Quale capo</span>
+            <select name="paio">
+              <option>Il paio Jujutsu</option>
             </select></label>
+
+          <fieldset class="field sizes only-pezzo wide">
+            <legend>Taglia in vita</legend>
+            <div class="size-system" role="radiogroup" aria-label="Sistema di taglie">
+              <label><input type="radio" name="sistema" value="IT" checked><span>IT</span></label>
+              <label><input type="radio" name="sistema" value="EU"><span>EU</span></label>
+              <label><input type="radio" name="sistema" value="US"><span>US</span></label>
+              <label><input type="radio" name="sistema" value="UK"><span>UK</span></label>
+            </div>
+            <div class="size-list"></div>
+          </fieldset>
 
           <label class="field only-custom" hidden><span>Capo</span>
             <select name="capo">
@@ -188,12 +243,13 @@
               <option>Sì, te lo mando io</option><option>No, sceglilo tu</option>
             </select></label>
           <label class="field only-custom wide" hidden><span>Cosa vuoi dipinto</span>
-            <textarea name="idea" rows="4" placeholder="Soggetto, stile, posizione sul capo. Se hai immagini di riferimento, allegale all'email."></textarea></label>
+            <textarea name="idea" rows="4" placeholder="Soggetto, stile, posizione sul capo. Le immagini di riferimento potrai mandarmele quando ti rispondo."></textarea></label>
 
           <label class="field wide"><span>Note <em>(facoltative)</em></span>
             <textarea name="note" rows="3"></textarea></label>
         </div>
 
+        <input class="sr" type="text" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true">
         <button class="btn btn-light" type="submit">Invia la richiesta</button>
         <p class="done" role="status" aria-live="polite"></p>
       </form>
