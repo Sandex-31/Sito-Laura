@@ -75,7 +75,7 @@ const heroScroll = { p: 0 };
   scene.add(new THREE.AmbientLight(0xffffff, 1.6));
   const key = new THREE.DirectionalLight(0xffe6d6, 1.6); // luce calda da lampada
   key.position.set(-3, 2, 5);
-  const rim = new THREE.DirectionalLight(0xb0445b, 3); // bordeaux
+  const rim = new THREE.DirectionalLight(0x2a7fb0, 3); // blu
   rim.position.set(4, 1, -3);
   const fill = new THREE.DirectionalLight(0x8fcfef, 1.2); // celeste
   fill.position.set(3, -2, 3);
