@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Laura, jeans dipinti a mano</title>
+  <meta name="description" content="Jeans e capi dipinti a mano da Laura. Prenota un paio già finito o chiedi un design su misura.">
+  <meta name="theme-color" content="#060506">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..600&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="preload" as="image" href="assets/jeans-fronte.webp">
+  <link rel="stylesheet" href="css/style.css">
+  <script type="importmap">
+    { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js" } }
+  </script>
+</head>
+<body>
+  <a class="skip" href="#prenota">Vai alla prenotazione</a>
+  <div class="lamp" aria-hidden="true"></div>
+
+  <header class="bar">
+    <a class="wordmark" href="#top" aria-label="Laura, torna all'inizio">Laura</a>
+    <nav aria-label="Sezioni">
+      <a href="#lavori">Lavori</a>
+      <a href="#disponibile">Disponibile</a>
+      <a href="#su-misura">Su misura</a>
+      <a class="bar-cta" href="#prenota">Prenota</a>
+    </nav>
+  </header>
+
+  <main id="top">
+    <!-- Hero: i jeans veri in 3D -->
+    <section class="hero" aria-labelledby="hero-title">
+      <svg class="stroke" viewBox="0 0 1000 1000" aria-hidden="true" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <filter id="brush" x="-20%" y="-20%" width="140%" height="140%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.035 0.9" numOctaves="3" seed="7"/>
+            <feDisplacementMap in="SourceGraphic" scale="38"/>
+          </filter>
+        </defs>
+        <path class="stroke-path" filter="url(#brush)"
+          d="M 470 1040 C 560 820, 600 600, 700 420 S 880 140, 1040 40"/>
+      </svg>
+
+      <div class="hero-stage" aria-hidden="true">
+        <canvas id="jeans3d"></canvas>
+        <img class="fallback" src="assets/jeans-fronte.webp" alt="">
+      </div>
+
+      <div class="hero-copy">
+        <h1 id="hero-title">
+          <span class="line"><span>Jeans dipinti</span></span>
+          <span class="line"><span>a mano, uno</span></span>
+          <span class="line"><span>alla volta.</span></span>
+        </h1>
+        <p class="lede">Disegno a pennello e inchiostro direttamente sul denim: personaggi, koi, glifi, piccoli segni sulle tasche. Scegli un paio già finito o chiedine uno pensato per te.</p>
+        <div class="actions">
+          <a class="btn btn-solid" href="#prenota" data-mode="pezzo">Prenota un paio</a>
+          <a class="btn btn-line" href="#prenota" data-mode="custom">Chiedi un design su misura</a>
+        </div>
+      </div>
+
+      <div class="turn" role="group" aria-label="Gira i jeans">
+        <p class="turn-hint">Trascina per girarli</p>
+        <button type="button" data-face="0" aria-pressed="true">Fronte</button>
+        <button type="button" data-face="1" aria-pressed="false">Retro</button>
+      </div>
+    </section>
+
+    <!-- Galleria 3D ad anello, guidata dallo scroll -->
+    <section class="works" id="lavori" aria-labelledby="works-title">
+      <div class="works-pin">
+        <div class="works-head">
+          <h2 id="works-title">Lavori finiti</h2>
+          <p>Ogni disegno nasce a mano, direttamente sul capo. Scorri per girare la galleria.</p>
+        </div>
+        <canvas id="ring3d" aria-hidden="true"></canvas>
+        <ol class="works-list">
+          <li><h3>Indossati</h3><p>Il paio Jujutsu per strada: Sukuna sulla coscia, glifi lungo la gamba.</p></li>
+          <li><h3>Sukuna</h3><p>Ritratto a linea sottile, con le mani giunte e i segni sul viso.</p></li>
+          <li><h3>Koi sul fianco</h3><p>Due carpe a pennello, una piena e una solo contorno.</p></li>
+          <li><h3>Glifi</h3><p>Una colonna di segni a pennello pieno che scende fino all'orlo.</p></li>
+          <li><h3>Tasche</h3><p>Un profilo a linea continua e un dado con gli occhi al posto dei punti.</p></li>
+          <li><h3>Il paio intero</h3><p>Tutti i disegni insieme, sul davanti.</p></li>
+        </ol>
+        <p class="works-count" aria-hidden="true"><span class="now">1</span> di 6</p>
+      </div>
+    </section>
+
+    <!-- Pezzo disponibile -->
+    <section class="piece" id="disponibile" aria-labelledby="piece-title">
+      <figure class="piece-media">
+        <img src="assets/fronte.jpg" alt="Jeans chiari dipinti a mano: ritratto di Sukuna sulla coscia, koi vicino alla tasca, glifi lungo la gamba destra" loading="lazy" width="1055" height="1600">
+        <img class="piece-back" src="assets/retro.jpg" alt="Retro degli stessi jeans: un profilo e un dado disegnati sulle tasche" loading="lazy" width="900" height="1200">
+      </figure>
+      <div class="piece-info">
+        <h2 id="piece-title">Il paio Jujutsu</h2>
+        <p>Pezzo unico, già finito e pronto da indossare. Taglio dritto, lavaggio chiaro, strappi sulla coscia sinistra.</p>
+        <dl>
+          <div><dt>Davanti</dt><dd>Sukuna, koi, colonna di glifi</dd></div>
+          <div><dt>Retro</dt><dd>Profilo e dado sulle tasche</dd></div>
+          <div><dt>Taglia e prezzo</dt><dd>Su richiesta, rispondo entro pochi giorni</dd></div>
+        </dl>
+        <a class="btn btn-solid" href="#prenota" data-mode="pezzo">Prenota questo paio</a>
+      </div>
+    </section>
+
+    <!-- Dettagli da vicino -->
+    <section class="close" aria-labelledby="close-title">
+      <div class="close-head">
+        <h2 id="close-title">Da vicino</h2>
+        <p>Tutto a mano, senza stampe né trasferibili: si vede la trama del denim sotto l'inchiostro. Passa sopra un dettaglio per vederlo a colori.</p>
+      </div>
+      <div class="strip">
+        <figure class="duo"><img src="assets/dett-sukuna.jpg" alt="" loading="lazy"><img class="c" src="assets/dett-sukuna.jpg" alt="Dettaglio del ritratto di Sukuna dipinto sulla coscia" loading="lazy"><figcaption>Sukuna, coscia sinistra</figcaption></figure>
+        <figure class="duo"><img src="assets/dett-koi.jpg" alt="" loading="lazy"><img class="c" src="assets/dett-koi.jpg" alt="Dettaglio delle due carpe koi vicino alla tasca" loading="lazy"><figcaption>Koi, sotto la tasca</figcaption></figure>
+        <figure class="duo"><img src="assets/dett-glifi.jpg" alt="" loading="lazy"><img class="c" src="assets/dett-glifi.jpg" alt="Dettaglio della colonna di glifi lungo la gamba" loading="lazy"><figcaption>Glifi, gamba destra</figcaption></figure>
+        <figure class="duo"><img src="assets/dett-profilo.jpg" alt="" loading="lazy"><img class="c" src="assets/dett-profilo.jpg" alt="Dettaglio del profilo disegnato sulla tasca posteriore" loading="lazy"><figcaption>Profilo, tasca sinistra</figcaption></figure>
+        <figure class="duo"><img src="assets/dett-dado.jpg" alt="" loading="lazy"><img class="c" src="assets/dett-dado.jpg" alt="Dettaglio del dado con gli occhi sulla tasca posteriore" loading="lazy"><figcaption>Dado, tasca destra</figcaption></figure>
+      </div>
+    </section>
+
+    <!-- Processo su misura -->
+    <section class="custom" id="su-misura" aria-labelledby="custom-title">
+      <div class="custom-head">
+        <h2 id="custom-title">Un design solo tuo</h2>
+        <p>Porti un'idea, anche solo abbozzata. La trasformo in un disegno pensato per il tuo capo: jeans, giacca, borsa o quello che vuoi dipingere.</p>
+        <div class="step-stage" aria-hidden="true">
+          <figure class="duo on"><img src="assets/dett-profilo.jpg" alt=""></figure>
+          <figure class="duo"><img src="assets/dett-dado.jpg" alt=""></figure>
+          <figure class="duo"><img src="assets/dett-koi.jpg" alt=""></figure>
+          <figure><img src="assets/indossati.jpg" alt=""></figure>
+        </div>
+      </div>
+      <div class="steps-wrap">
+        <svg class="steps-line" viewBox="0 0 4 100" preserveAspectRatio="none" aria-hidden="true"><path d="M2 0 V100"/></svg>
+        <ol class="steps">
+          <li><span class="n">1</span><h3>Mi racconti l'idea</h3><p>Soggetto, riferimenti, dove vuoi il disegno e quanto grande.</p></li>
+          <li><span class="n">2</span><h3>Ricevi la bozza</h3><p>La sistemiamo insieme finché non ti convince. Solo allora inizio.</p></li>
+          <li><span class="n">3</span><h3>Dipingo il capo</h3><p>Su un capo che mi mandi tu o su uno che scegliamo insieme.</p></li>
+          <li><span class="n">4</span><h3>Lo ricevi</h3><p>Spedizione o consegna a mano, con le indicazioni per lavarlo.</p></li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- Prenotazione -->
+    <section class="book" id="prenota" aria-labelledby="book-title">
+      <div class="book-head">
+        <h2 id="book-title">Prenota</h2>
+        <p>Compila il modulo: si apre la tua app di posta con la richiesta già scritta. Ti rispondo per confermare disponibilità, tempi e prezzo.</p>
+        <div class="book-visual" aria-hidden="true">
+          <figure class="duo blue v-pezzo"><img src="assets/dett-sukuna.jpg" alt=""></figure>
+          <figure class="duo blue v-custom"><img src="assets/dett-glifi.jpg" alt=""></figure>
+        </div>
+      </div>
+
+      <form class="form" id="booking" novalidate>
+        <fieldset class="mode">
+          <legend class="sr">Cosa vuoi prenotare</legend>
+          <label><input type="radio" name="mode" value="pezzo" checked><span>Un paio già fatto</span></label>
+          <label><input type="radio" name="mode" value="custom"><span>Un design nuovo</span></label>
+          <i class="mode-pill" aria-hidden="true"></i>
+        </fieldset>
+
+        <div class="grid">
+          <label class="field"><span>Nome</span>
+            <input name="nome" autocomplete="name" required>
+            <small class="err" hidden>Scrivi il tuo nome.</small></label>
+          <label class="field"><span>Email</span>
+            <input name="email" type="email" autocomplete="email" required>
+            <small class="err" hidden>Inserisci un'email valida, così posso risponderti.</small></label>
+
+          <label class="field only-pezzo"><span>Taglia in vita</span>
+            <select name="taglia">
+              <option value="">Scegli la taglia</option>
+              <option>W24</option><option>W25</option><option>W26</option><option>W27</option>
+              <option>W28</option><option>W29</option><option>W30</option><option>W31</option>
+              <option>W32</option><option>W34</option><option>Non lo so, ne parliamo</option>
+            </select></label>
+
+          <label class="field only-custom" hidden><span>Capo</span>
+            <select name="capo">
+              <option>Jeans</option><option>Giacca di jeans</option><option>Borsa</option><option>Altro</option>
+            </select></label>
+          <label class="field only-custom" hidden><span>Il capo ce l'hai già?</span>
+            <select name="capo_proprio">
+              <option>Sì, te lo mando io</option><option>No, sceglilo tu</option>
+            </select></label>
+          <label class="field only-custom wide" hidden><span>Cosa vuoi dipinto</span>
+            <textarea name="idea" rows="4" placeholder="Soggetto, stile, posizione sul capo. Se hai immagini di riferimento, allegale all'email."></textarea></label>
+
+          <label class="field wide"><span>Note <em>(facoltative)</em></span>
+            <textarea name="note" rows="3"></textarea></label>
+        </div>
+
+        <button class="btn btn-light" type="submit">Invia la richiesta</button>
+        <p class="done" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <p class="wordmark">Laura</p>
+    <p>Denim dipinto a mano. <a href="https://instagram.com/" rel="noopener">Instagram</a> <a class="mail" href="mailto:">Email</a></p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.min.js"></script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
