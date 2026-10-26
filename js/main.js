@@ -1,4 +1,7 @@
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { DecalGeometry } from 'three/addons/geometries/DecalGeometry.js';
 
 // Indirizzo a cui arrivano le prenotazioni.
 const CONTATTO = 'kamicustomwear@gmail.com';
@@ -20,9 +23,7 @@ document.querySelectorAll('a[href^="#"]').forEach((a) => {
   a.addEventListener('click', (e) => {
     const target = document.querySelector(a.getAttribute('href'));
     if (!target) return;
-    if (a.dataset.mode) setMode(a.dataset.mode);
-    const idea = document.querySelector('textarea[name="idea"]');
-    if (a.dataset.idea && !idea.value) idea.value = a.dataset.idea;
+    if (a.dataset.idea && !form.elements.idea.value) form.elements.idea.value = a.dataset.idea;
     if (lenis) { e.preventDefault(); lenis.scrollTo(target, { duration: 1.4 }); }
   });
 });
@@ -146,7 +147,7 @@ const heroScroll = { p: 0 };
     p.needsUpdate = true;
   };
 
-  // Trascinamento e pulsanti fronte/retro
+  // Trascinamento
   let base = 0, drag = 0, dragging = false, lastX = 0, rot = 0;
   canvas.addEventListener('pointerdown', (e) => { dragging = true; lastX = e.clientX; canvas.setPointerCapture(e.pointerId); });
   canvas.addEventListener('pointermove', (e) => {
@@ -157,19 +158,6 @@ const heroScroll = { p: 0 };
   const endDrag = () => { dragging = false; };
   canvas.addEventListener('pointerup', endDrag);
   canvas.addEventListener('pointercancel', endDrag);
-
-  const faceButtons = document.querySelectorAll('.turn button');
-  faceButtons.forEach((b) => b.addEventListener('click', () => {
-    const face = Number(b.dataset.face);
-    const total = base + drag;
-    const turns = Math.round((total - face * Math.PI) / (2 * Math.PI));
-    base = turns * 2 * Math.PI + face * Math.PI;
-    drag = 0;
-  }));
-  const updatePressed = (angle) => {
-    const showingBack = Math.cos(angle) < 0;
-    faceButtons.forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.face) === Number(showingBack))));
-  };
 
   let layout = { x: 0, y: 0, s: 1 };
   function resize() {
@@ -201,7 +189,6 @@ const heroScroll = { p: 0 };
     const s = layout.s * (0.82 + 0.18 * intro.v);
     jeans.scale.setScalar(s);
     jeans.position.set(layout.x, layout.y - (1 - intro.v) * 0.6 + heroScroll.p * 0.8 + (reduce ? 0 : Math.sin(t * 1.1) * 0.04), 0);
-    updatePressed(rot);
     if (!reduce) {
       driftDust(t);
       key.intensity = 1.6 + Math.sin(t * 0.9) * 0.08 + Math.sin(t * 2.3) * 0.04; // la luce respira
@@ -233,6 +220,177 @@ const heroScroll = { p: 0 };
     gsap.to('.hero-copy', { y: -80, autoAlpha: 0.2, ease: 'none', scrollTrigger: { trigger: hero, start: '30% top', end: 'bottom top', scrub: true } });
   }
 }
+
+/* ---------- Katana sullo sfondo: compare dopo l'hero e gira con lo scroll ---------- */
+// "Kami" inciso sulle due facce della lama, vicino alla tsuba: decal proiettato sulla
+// superficie curva, con ombra in alto e luce in basso per dare il sottorilievo.
+// Va chiamata con la katana ancora senza rotazione/posizione (spazio della katana = mondo).
+async function engraveName(blade, env) {
+  const font = '"Great Vibes", cursive';
+  await document.fonts.load(`200px ${font}`).catch(() => {});
+  // Canvas ritagliato sulla scritta, così riempie tutta l'incisione.
+  const c = document.createElement('canvas');
+  let g = c.getContext('2d');
+  g.font = `200px ${font}`;
+  const m = g.measureText('KAMI');
+  const pad = 16;
+  c.width = Math.ceil(m.actualBoundingBoxLeft + m.actualBoundingBoxRight) + pad * 2;
+  c.height = Math.ceil(m.actualBoundingBoxAscent + m.actualBoundingBoxDescent) + pad * 2;
+  g = c.getContext('2d');
+  g.font = `200px ${font}`;
+  const text = (dx, dy, color) => {
+    g.fillStyle = color;
+    g.fillText('KAMI', pad + m.actualBoundingBoxLeft + dx, pad + m.actualBoundingBoxAscent + dy);
+  };
+  text(0, -5, 'rgba(0,0,0,0.95)'); // bordo superiore in ombra
+  text(0, 5, 'rgba(255,255,255,0.85)'); // bordo inferiore che prende luce
+  text(0, 0, '#15191e'); // fondo dell'incisione
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 8;
+  const mat = new THREE.MeshStandardMaterial({
+    map: tex, transparent: true, metalness: 0.6, roughness: 0.55, envMap: env,
+    polygonOffset: true, polygonOffsetFactor: -4, depthWrite: false,
+  });
+
+  blade.updateWorldMatrix(true, false);
+  const box = new THREE.Box3().setFromObject(blade);
+  const len = box.max.x - box.min.x, thick = box.max.z - box.min.z;
+  const ray = new THREE.Raycaster();
+  // Centro della faccia a distanza x dalla tsuba (lato +x), visto dal lato `side` (+1 davanti, -1 dietro).
+  const hitAt = (x, side) => {
+    const ys = [];
+    for (let y = box.min.y; y <= box.max.y; y += (box.max.y - box.min.y) / 60) {
+      ray.set(new THREE.Vector3(x, y, side * 10), new THREE.Vector3(0, 0, -side));
+      const h = ray.intersectObject(blade)[0];
+      if (h) ys.push(h.point);
+    }
+    if (!ys.length) return null;
+    const mid = ys[Math.floor(ys.length / 2)];
+    mid.width = ys[ys.length - 1].y - ys[0].y; // larghezza reale della lama in quel punto
+    return mid;
+  };
+  const inv = blade.matrixWorld.clone().invert();
+  for (const side of [1, -1]) {
+    const x = box.max.x - len * 0.2;
+    const p = hitAt(x, side), q = hitAt(x - len * 0.05, side);
+    if (!p || !q) continue;
+    const width = p.width * 0.85;
+    const a = Math.atan2(p.y - q.y, p.x - q.x); // inclinazione della lama in quel punto
+    const rot = side > 0 ? new THREE.Euler(0, 0, a) : new THREE.Euler(0, Math.PI, -a);
+    const at = p.clone().setZ(p.z + side * thick * 0.3);
+    const geo = new DecalGeometry(blade, at, rot, new THREE.Vector3(width * c.width / c.height, width, thick));
+    geo.applyMatrix4(inv);
+    blade.add(new THREE.Mesh(geo, mat));
+  }
+}
+
+(async function katanaScene() {
+  const canvas = document.getElementById('katana3d');
+  const renderer = makeRenderer(canvas);
+  if (!renderer) return;
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 100);
+  camera.position.z = 16;
+  scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+  const key = new THREE.DirectionalLight(0xffe6d6, 1.6);
+  key.position.set(3, 2, 5);
+  const rim = new THREE.DirectionalLight(0xcee5ff, 3); // azzurro, come nell'hero
+  rim.position.set(-4, 3, -2);
+  scene.add(key, rim);
+
+  const { scene: model } = await new GLTFLoader().loadAsync('assets/katana.glb');
+  // Elsa in azzurro acceso (il --blu del sito sparisce al 35% di opacità):
+  // tsuba "Circle.004" metallo lucido, impugnatura "Cube.*" con la trama di tela originale.
+  const hilt = '#4fb4ff';
+  const env = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment()).texture;
+  model.traverse((o) => {
+    if (!o.isMesh) return;
+    if (o.name === 'Plane') { o.material.envMap = env; return; } // lama: riflessi d'acciaio
+    o.material = o.material.clone();
+    o.material.color.set(hilt);
+    o.material.emissive.set(hilt);
+    if (o.name === 'Circle.004') {
+      o.material.metalnessMap = o.material.roughnessMap = o.material.map = null;
+      o.material.metalness = 1;
+      o.material.roughness = 0.2;
+      o.material.envMap = env;
+      o.material.emissiveIntensity = 0.25;
+    } else {
+      o.material.emissiveMap = o.material.map;
+      o.material.emissiveIntensity = 0.9;
+    }
+  });
+  // Centrata e messa in orizzontale, qualunque sia l'asse lungo del modello.
+  const box = new THREE.Box3().setFromObject(model);
+  const size = box.getSize(new THREE.Vector3());
+  model.position.sub(box.getCenter(new THREE.Vector3()));
+  const align = new THREE.Group();
+  align.add(model);
+  const long = Math.max(size.x, size.y, size.z);
+  // Assi misurati sulla lama: lunghezza -> x, larghezza -> y, spessore -> z,
+  // così con il giro a 0 la faccia larga (dove andrà il nome) guarda la camera.
+  const blade = new THREE.Box3().setFromObject(model.getObjectByName('Plane')).getSize(new THREE.Vector3());
+  const axes = [0, 1, 2].sort((a, b) => blade.getComponent(b) - blade.getComponent(a));
+  const unit = (i) => new THREE.Vector3().setComponent(i, 1);
+  const L = unit(axes[0]), W = unit(axes[1]), T = new THREE.Vector3().crossVectors(L, W);
+  align.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(L, W, T).transpose());
+  const katana = new THREE.Group();
+  katana.add(align);
+  katana.scale.setScalar(7 / long);
+  scene.add(katana);
+  await engraveName(katana.getObjectByName('Plane'), env);
+
+  function resize() {
+    renderer.setSize(innerWidth, innerHeight, false);
+    camera.aspect = innerWidth / innerHeight;
+    camera.updateProjectionMatrix();
+  }
+  addEventListener('resize', resize);
+  resize();
+
+  const page = { p: 0 };
+  ScrollTrigger.create({ start: 0, end: 'max', onUpdate: (st) => { page.p = st.progress; } });
+  // Nello spazio vuoto .katana-stage la katana viene avanti, piena e al centro.
+  const stage = { p: 0, center: 0 };
+  ScrollTrigger.create({
+    trigger: '.katana-stage', start: 'top bottom', end: 'bottom top',
+    onUpdate: (st) => { stage.p = st.progress; },
+    // progresso di pagina in cui lo spazio è centrato: lì il giro mostra il fianco della lama
+    onRefresh: (st) => { stage.center = (st.start + st.end) / 2 / ScrollTrigger.maxScroll(window); },
+  });
+  const lerp = THREE.MathUtils.lerp;
+
+  let cur = 0;
+  let f = 0;
+  const clock = new THREE.Clock();
+  gsap.ticker.add(() => {
+    // Invisibile nell'hero, poi sale piano e resta in secondo piano.
+    // f: primo piano nello spazio vuoto, con rampa lunga e smorzata per entrare/uscire senza scatti.
+    const fTarget = THREE.MathUtils.smootherstep(Math.min(stage.p, 1 - stage.p), 0, 0.4);
+    f += (fTarget - f) * (reduce ? 1 : 0.05);
+    const op = lerp(THREE.MathUtils.smoothstep(heroScroll.p, 0.55, 1) * 0.35, 1, f);
+    canvas.style.opacity = op;
+    if (op === 0) return;
+    const t = clock.getElapsedTime();
+    cur += ((reduce ? 0.3 : page.p) - cur) * (reduce ? 1 : 0.06);
+    const float = reduce ? 0 : Math.sin(t * 0.5) * 0.15;
+    // Il giro (y) segue solo lo scroll, sempre nello stesso verso; in primo piano cambia solo l'inclinazione.
+    katana.rotation.set(
+      lerp(0.35 + Math.sin(cur * Math.PI) * 0.3, 0, f),
+      (cur - stage.center) * Math.PI * 3, // 0 = di fianco, al centro dello spazio vuoto
+      lerp(-0.45 + Math.sin(cur * Math.PI * 2) * 0.35, -0.3, f),
+    );
+    katana.position.set(
+      // in primo piano: vicina, con l'incisione (verso la tsuba) al centro dello schermo
+      lerp(Math.sin(cur * Math.PI * 2) * 2.2, -1.4, f),
+      lerp(Math.cos(cur * Math.PI * 1.5) * 0.8, 0.4, f) + float,
+      lerp(-2, camera.aspect < 1 ? 0 : 7, f),
+    );
+    renderer.render(scene, camera);
+  });
+})();
 
 /* ---------- Lavori: cartelle che si aprono in un anello ---------- */
 // Ogni foto ondeggia come stoffa; aperta la cartella si curva sull'anello,
@@ -292,7 +450,7 @@ const RING_FRAG = `
   const [worn, side, fronte, retro, ...nero] = await Promise.all([
     'assets/indossati.jpg', 'assets/dettaglio-fianco.jpg', 'assets/fronte.jpg', 'assets/retro.jpg',
     'assets/modello-gira.jpg', 'assets/modello-gamba.jpg', 'assets/modello-tasca.jpg', 'assets/modello-calcio.jpg',
-    'assets/modello-retro.jpg', 'assets/modello-sorriso.jpg', 'assets/nero-braccio.jpg',
+    'assets/modello-retro.jpg', 'assets/nero-braccio.jpg',
   ].map(load));
   // Ritaglio in pixel sull'immagine originale, formato 3:4.
   const crop = (tex, x, y, w, h) => {
@@ -555,31 +713,6 @@ const form = document.getElementById('booking');
 const done = form.querySelector('.done');
 document.querySelector('.foot .mail').href = `mailto:${CONTATTO}`;
 
-function setMode(mode) {
-  form.querySelector(`input[name="mode"][value="${mode}"]`).checked = true;
-  form.querySelectorAll('.only-pezzo').forEach((el) => { el.hidden = mode !== 'pezzo'; });
-  form.querySelectorAll('.only-custom').forEach((el) => { el.hidden = mode !== 'custom'; });
-  done.textContent = '';
-  ScrollTrigger.refresh();
-}
-form.querySelectorAll('input[name="mode"]').forEach((r) => r.addEventListener('change', () => setMode(r.value)));
-
-// Taglie per paese: la richiesta arriva già con il sistema indicato (es. "EU 38").
-const TAGLIE = {
-  IT: ['38', '40', '42', '44', '46', '48', '50', '52'],
-  EU: ['32', '34', '36', '38', '40', '42', '44', '46'],
-  US: ['W24', 'W25', 'W26', 'W27', 'W28', 'W29', 'W30', 'W31', 'W32', 'W34'],
-  UK: ['4', '6', '8', '10', '12', '14', '16', '18'],
-};
-const sizeList = form.querySelector('.size-list');
-function renderSizes(sys) {
-  const chip = (value, text, cls = '') => `<label${cls}><input type="radio" name="taglia" value="${value}"><span>${text}</span></label>`;
-  sizeList.innerHTML = TAGLIE[sys].map((t) => chip(`${sys} ${t}`, t)).join('')
-    + chip('Da definire', 'Non lo so, ne parliamo', ' class="unsure"');
-}
-form.querySelectorAll('input[name="sistema"]').forEach((r) => r.addEventListener('change', () => renderSizes(r.value)));
-renderSizes(form.querySelector('input[name="sistema"]:checked').value);
-
 form.addEventListener('input', (e) => {
   if (e.target.getAttribute('aria-invalid') === 'true' && e.target.checkValidity()) {
     e.target.removeAttribute('aria-invalid');
@@ -604,16 +737,14 @@ form.addEventListener('submit', async (e) => {
 
   const d = Object.fromEntries(new FormData(form));
   if (d._honey) return;
-  const custom = d.mode === 'custom';
   const payload = {
-    _subject: custom ? 'Richiesta design su misura' : `Prenotazione: ${d.paio}`,
+    _subject: 'Richiesta su misura',
     _replyto: d.email,
     _template: 'table',
     Nome: d.nome,
     Email: d.email,
-    ...(custom
-      ? { Capo: d.capo, 'Capo proprio': d.capo_proprio, Idea: d.idea || '-' }
-      : { Paio: d.paio, Taglia: d.taglia || 'Da definire' }),
+    Capo: d.capo,
+    Idea: d.idea || '-',
     Note: d.note || '-',
   };
 
@@ -629,11 +760,7 @@ form.addEventListener('submit', async (e) => {
     const out = await res.json().catch(() => ({}));
     if (!res.ok || String(out.success) !== 'true') throw new Error(out.message || res.status);
     form.reset();
-    renderSizes(form.querySelector('input[name="sistema"]:checked').value);
-    setMode(custom ? 'custom' : 'pezzo');
-    done.textContent = custom
-      ? 'Richiesta inviata. Ti scrivo presto per parlare della tua idea.'
-      : 'Richiesta inviata. Ti scrivo presto per confermare taglia, tempi e prezzo.';
+    done.textContent = 'Richiesta inviata. Ti scrivo presto per parlare della tua idea.';
   } catch {
     done.innerHTML = `Invio non riuscito. Riprova tra poco o scrivimi a <a href="mailto:${CONTATTO}">${CONTATTO}</a>.`;
   } finally {

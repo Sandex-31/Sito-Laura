@@ -1,31 +1,36 @@
 <!doctype html>
 <html lang="it">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Kami, jeans dipinti a mano</title>
-  <meta name="description" content="Jeans e capi dipinti a mano da Kami. Prenota un paio già finito o chiedi un design su misura.">
+  <meta name="description"
+    content="Jeans e capi dipinti a mano da Kami. Ogni capo è su misura: richiedi il tuo, con un tema nuovo o ispirato ai lavori già fatti.">
   <meta name="theme-color" content="#060506">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..600&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..600&family=Hanken+Grotesk:wght@400;500;600&family=Great+Vibes&display=swap"
+    rel="stylesheet">
   <link rel="preload" as="image" href="assets/jeans-fronte.webp">
   <link rel="stylesheet" href="css/style.css">
   <script type="importmap">
-    { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js" } }
+    { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/" } }
   </script>
 </head>
+
 <body>
-  <a class="skip" href="#prenota">Vai alla prenotazione</a>
+  <a class="skip" href="#prenota">Vai alla richiesta</a>
   <div class="lamp" aria-hidden="true"></div>
+  <canvas id="katana3d" aria-hidden="true"></canvas>
 
   <header class="bar">
     <a class="wordmark" href="#top" aria-label="Kami, torna all'inizio">Kami</a>
     <nav aria-label="Sezioni">
       <a href="#lavori">Lavori</a>
-      <a href="#disponibile">Disponibile</a>
       <a href="#su-misura">Su misura</a>
-      <a class="bar-cta" href="#prenota">Prenota</a>
+      <a class="bar-cta" href="#prenota">Richiedi</a>
     </nav>
   </header>
 
@@ -35,12 +40,11 @@
       <svg class="stroke" viewBox="0 0 1000 1000" aria-hidden="true" preserveAspectRatio="xMidYMid slice">
         <defs>
           <filter id="brush" x="-20%" y="-20%" width="140%" height="140%">
-            <feTurbulence type="fractalNoise" baseFrequency="0.035 0.9" numOctaves="3" seed="7"/>
-            <feDisplacementMap in="SourceGraphic" scale="38"/>
+            <feTurbulence type="fractalNoise" baseFrequency="0.035 0.9" numOctaves="3" seed="7" />
+            <feDisplacementMap in="SourceGraphic" scale="38" />
           </filter>
         </defs>
-        <path class="stroke-path" filter="url(#brush)"
-          d="M 470 1040 C 560 820, 600 600, 700 420 S 880 140, 1040 40"/>
+        <path class="stroke-path" filter="url(#brush)" d="M 470 1040 C 560 820, 600 600, 700 420 S 880 140, 1040 40" />
       </svg>
 
       <div class="hero-stage" aria-hidden="true">
@@ -54,17 +58,16 @@
           <span class="line"><span><em>a mano</em>, uno</span></span>
           <span class="line"><span>alla volta.</span></span>
         </h1>
-        <p class="lede">Disegno a pennello e inchiostro direttamente sul denim: personaggi, koi, glifi, piccoli segni sulle tasche. Scegli un paio già finito o chiedine uno pensato per te.</p>
+        <p class="lede">Disegno a pennello e inchiostro direttamente sul denim: personaggi, koi, Logo, piccoli segni
+          sulle tasche. Ogni capo è su misura: chiedine uno pensato per te.</p>
         <div class="actions">
-          <a class="btn btn-solid" href="#prenota" data-mode="pezzo">Prenota un paio</a>
-          <a class="btn btn-line" href="#prenota" data-mode="custom">Chiedi un design su misura</a>
+          <a class="btn btn-solid" href="#prenota">Richiedi il tuo capo</a>
+          <a class="btn btn-line" href="#lavori">Guarda i lavori</a>
         </div>
       </div>
 
-      <div class="turn" role="group" aria-label="Gira i jeans">
+      <div class="turn" aria-hidden="true">
         <p class="turn-hint">Trascina per girarli</p>
-        <button type="button" data-face="0" aria-pressed="true">Fronte</button>
-        <button type="button" data-face="1" aria-pressed="false">Retro</button>
       </div>
     </section>
 
@@ -77,26 +80,63 @@
         </div>
         <canvas id="ring3d" aria-hidden="true"></canvas>
         <div class="folders" role="group" aria-label="Capi">
-          <button type="button" data-group="0"><span class="f-name">Il paio Jujutsu</span><span class="f-n">6 foto</span></button>
-          <button type="button" data-group="1"><span class="f-name">Il paio nero</span><span class="f-n">7 foto</span></button>
+          <button type="button" data-group="0"><span class="f-name">Jujutsu</span><span class="f-n">6
+              foto</span></button>
+          <button type="button" data-group="1"><span class="f-name">Souls-Like</span><span class="f-n">6
+              foto</span></button>
         </div>
         <div class="viewer" hidden>
           <div class="viewer-text">
             <p class="viewer-group"></p>
             <ol class="works-list">
-              <li data-group="0"><h3>Il paio intero</h3><p>Tutti i disegni insieme, sul davanti.</p></li>
-              <li data-group="0"><h3>Sukuna</h3><p>Ritratto a linea sottile, con le mani giunte e i segni sul viso.</p></li>
-              <li data-group="0"><h3>Koi sul fianco</h3><p>Due carpe a pennello, una piena e una solo contorno.</p></li>
-              <li data-group="0"><h3>Glifi</h3><p>Una colonna di segni a pennello pieno che scende fino all'orlo.</p></li>
-              <li data-group="0"><h3>Tasche</h3><p>Un profilo a linea continua e un dado con gli occhi al posto dei punti.</p></li>
-              <li data-group="0"><h3>Indossati</h3><p>Il paio Jujutsu per strada: Sukuna sulla coscia, glifi lungo la gamba.</p></li>
-              <li data-group="1"><h3>Indossati</h3><p>Il paio nero addosso: totem e simboli lungo la gamba sinistra.</p></li>
-              <li data-group="1"><h3>Braccio e volto</h3><p>Da vicino, il braccio meccanico e il volto in cornice sulla gamba destra.</p></li>
-              <li data-group="1"><h3>Mano in tasca</h3><p>Gamba larga che cade dritta fino alle scarpe.</p></li>
-              <li data-group="1"><h3>In movimento</h3><p>Il denim si piega, i segni bianchi restano netti.</p></li>
-              <li data-group="1"><h3>Il retro</h3><p>Lame incrociate e un segno geometrico sulle tasche.</p></li>
-              <li data-group="1"><h3>Contro il muro</h3><p>Il paio completo, dalla vita all'orlo.</p></li>
-              <li data-group="1"><h3>Braccio</h3><p>Il braccio scheletrico e meccanico, tratto per tratto.</p></li>
+              <li data-group="0">
+                <h3>Il paio intero</h3>
+                <p>Tutti i disegni insieme, sul davanti.</p>
+              </li>
+              <li data-group="0">
+                <h3>Sukuna</h3>
+                <p>Ritratto a linea sottile, con le mani giunte e i segni sul viso.</p>
+              </li>
+              <li data-group="0">
+                <h3>Koi sul fianco</h3>
+                <p>Due carpe a pennello, una piena e una solo contorno.</p>
+              </li>
+              <li data-group="0">
+                <h3>Logo</h3>
+                <p>Una colonna di segni a pennello pieno che scende fino all'orlo.</p>
+              </li>
+              <li data-group="0">
+                <h3>Tasche</h3>
+                <p>Un profilo a linea continua e un dado con gli occhi al posto dei punti.</p>
+              </li>
+              <li data-group="0">
+                <h3>Indossati</h3>
+                <p>Il paio Jujutsu per strada: Sukuna sulla coscia, Logo lungo la gamba.</p>
+              </li>
+              <li data-group="1">
+                <h3>Indossati</h3>
+                <p>Paio Souls-Like addosso: totem e simboli lungo la gamba sinistra.</p>
+              </li>
+              <li data-group="1">
+                <h3>Sekiro e StoneMachia</h3>
+                <p>Arto Prostetico da Sekiro e maschera di Derasin in StoneMachia</p>
+              </li>
+              <li data-group="1">
+                <h3>Artwork laterali</h3>
+                <p>Essendo dipinti a mano gli artwork possono passare lungo tutto il capo.</p>
+              </li>
+              <li data-group="1">
+                <h3>Qualsiasi stile</h3>
+                <p>Capo scelto totalmente dal cliente, nessuna restrizione</p>
+              </li>
+              <li data-group="1">
+                <h3>Il retro</h3>
+                <p>Lame incrociate e un segno geometrico sulle tasche.</p>
+              </li>
+              <li data-group="1">
+                <h3>Sekiro</h3>
+                <p>Il braccio prostetico di Sekiro</p>
+              </li>
             </ol>
           </div>
           <div class="viewer-nav">
@@ -109,21 +149,38 @@
       </div>
     </section>
 
-    <!-- Pezzo disponibile -->
-    <section class="piece" id="disponibile" aria-labelledby="piece-title">
+    <!-- Spazio vuoto: qui la katana passa in primo piano -->
+    <div class="katana-stage" aria-hidden="true"></div>
+
+    <!-- Il paio Jujutsu -->
+    <section class="piece" id="jujutsu" aria-labelledby="piece-title">
       <figure class="piece-media">
-        <img src="assets/fronte.jpg" alt="Jeans chiari dipinti a mano: ritratto di Sukuna sulla coscia, koi vicino alla tasca, glifi lungo la gamba destra" loading="lazy" width="1055" height="1600">
-        <img class="piece-back" src="assets/retro.jpg" alt="Retro degli stessi jeans: un profilo e un dado disegnati sulle tasche" loading="lazy" width="900" height="1200">
+        <img src="assets/fronte.jpg"
+          alt="Jeans chiari dipinti a mano: ritratto di Sukuna sulla coscia, koi vicino alla tasca, Logo lungo la gamba destra"
+          loading="lazy" width="1055" height="1600">
+        <img class="piece-back" src="assets/retro.jpg"
+          alt="Retro degli stessi jeans: un profilo e un dado disegnati sulle tasche" loading="lazy" width="900"
+          height="1200">
       </figure>
       <div class="piece-info">
         <h2 id="piece-title">Il paio Jujutsu</h2>
-        <p>Pezzo unico, già finito e pronto da indossare. Taglio dritto, lavaggio chiaro, strappi sulla coscia sinistra.</p>
+        <p>Taglio dritto, lavaggio chiaro. Non è in vendita, ma puoi chiederne uno sullo stesso tema, fatto per te.</p>
         <dl>
-          <div><dt>Davanti</dt><dd>Sukuna, koi, colonna di glifi</dd></div>
-          <div><dt>Retro</dt><dd>Profilo e dado sulle tasche</dd></div>
-          <div><dt>Taglia e prezzo</dt><dd>Su richiesta, rispondo entro pochi giorni</dd></div>
+          <div>
+            <dt>Davanti</dt>
+            <dd>Sukuna, koi, Logo</dd>
+          </div>
+          <div>
+            <dt>Retro</dt>
+            <dd>Profilo e dado sulle tasche</dd>
+          </div>
+          <div>
+            <dt>Prezzo</dt>
+            <dd>Da 50 a 180 €, in base agli artwork</dd>
+          </div>
         </dl>
-        <a class="btn btn-solid" href="#prenota" data-mode="pezzo">Prenota questo paio</a>
+        <a class="btn btn-solid" href="#prenota"
+          data-idea="Vorrei un paio sul tema del paio Jujutsu, con queste modifiche: ">Chiedine uno così</a>
       </div>
     </section>
 
@@ -132,23 +189,51 @@
       <div class="noir-head">
         <h2 id="noir-title">Linea bianca<br><em>su nero</em></h2>
         <div class="noir-copy">
-          <p>Jeans neri a gamba larga, dipinti a pennello sottile. Un braccio meccanico, un volto classico, simboli e un totem che corre lungo la gamba: ogni segno è tracciato a mano, uno dopo l'altro.</p>
-          <p class="noir-note">È un pezzo unico e non è in vendita, ma puoi chiederne una versione tua, con le modifiche che vuoi.</p>
-          <a class="btn btn-line" href="#prenota" data-mode="custom" data-idea="Vorrei una versione del paio nero, con queste modifiche: ">Chiedi la tua versione</a>
+          <p>Jeans neri a gamba larga, dipinti a pennello sottile. Un braccio prostetico del gioco Sekiro: Shadows die
+            twice, la maschera di Derasin da StoneMachia, il bastone da Black Myth: Wukong,
+            La maschera del protagonista di Thymesia, le rune e i segni di: DarkSouls, Elden Ring e Bloodborne; Il
+            simbolo del sacrificio di Blasphemous e le spade di HollowKnight e SilkSong, tutto unito da simboli
+            geometrici in fineline.
+          </p>
+          <p class="noir-note">È un pezzo unico e non è in vendita, ma puoi chiederne una versione tua, con le modifiche
+            che vuoi.</p>
+          <a class="btn btn-line" href="#prenota"
+            data-idea="Vorrei una versione del paio nero, con queste modifiche: ">Chiedi la tua versione</a>
         </div>
       </div>
       <div class="mosaic">
         <div class="col" data-speed="0">
-          <figure><img src="assets/modello-gira.jpg" alt="Ragazzo con camicia nera e i jeans neri dipinti, totem e simboli bianchi lungo la gamba" loading="lazy" width="900" height="1200"><figcaption>Indossati</figcaption></figure>
-          <figure><img src="assets/modello-retro.jpg" alt="Retro dei jeans neri indossati, con lame incrociate sulla tasca" loading="lazy" width="900" height="1200"><figcaption>Il retro</figcaption></figure>
+          <figure><img src="assets/modello-gira.jpg"
+              alt="Ragazzo con camicia nera e i jeans neri dipinti, totem e simboli bianchi lungo la gamba"
+              loading="lazy" width="900" height="1200">
+            <figcaption>simbolo del sacrificio</figcaption>
+          </figure>
+          <figure><img src="assets/modello-retro.jpg"
+              alt="Retro dei jeans neri indossati, con lame incrociate sulla tasca" loading="lazy" width="900"
+              height="1200">
+            <figcaption>Le armi in HollowKnight & SilkSong</figcaption>
+          </figure>
         </div>
         <div class="col" data-speed="140">
-          <figure><img src="assets/nero-braccio.jpg" alt="Braccio scheletrico e meccanico dipinto lungo la gamba" loading="lazy" width="900" height="1200"><figcaption>Braccio meccanico</figcaption></figure>
-          <figure><img src="assets/modello-calcio.jpg" alt="Il ragazzo alza una gamba contro il muro, i disegni bianchi seguono la piega del denim" loading="lazy" width="900" height="1200"><figcaption>In movimento</figcaption></figure>
+          <figure><img src="assets/nero-braccio.jpg" alt="Braccio scheletrico e meccanico dipinto lungo la gamba"
+              loading="lazy" width="900" height="1200">
+            <figcaption>Braccio prostetico di Sekiro</figcaption>
+          </figure>
+          <figure><img src="assets/modello-calcio.jpg"
+              alt="Il ragazzo alza una gamba contro il muro, i disegni bianchi seguono la piega del denim"
+              loading="lazy" width="900" height="1200">
+            <figcaption>Pantalone Skater, a scelta </figcaption>
+          </figure>
         </div>
         <div class="col" data-speed="60">
-          <figure><img src="assets/modello-tasca.jpg" alt="Jeans neri a gamba larga indossati, mano in tasca" loading="lazy" width="900" height="1200"><figcaption>Gamba larga</figcaption></figure>
-          <figure><img src="assets/nero-volto.jpg" alt="Profilo di un volto classico dentro una cornice tratteggiata" loading="lazy" width="900" height="1200"><figcaption>Volto in cornice</figcaption></figure>
+          <figure><img src="assets/modello-tasca.jpg" alt="Jeans neri a gamba larga indossati, mano in tasca"
+              loading="lazy" width="900" height="1200">
+            <figcaption>Gamba larga</figcaption>
+          </figure>
+          <figure><img src="assets/nero-volto.jpg" alt="Profilo di un volto classico dentro una cornice tratteggiata"
+              loading="lazy" width="900" height="1200">
+            <figcaption>Machera di Derasin</figcaption>
+          </figure>
         </div>
       </div>
     </section>
@@ -157,14 +242,30 @@
     <section class="close" aria-labelledby="close-title">
       <div class="close-head">
         <h2 id="close-title">Da vicino</h2>
-        <p>Tutto a mano, senza stampe né trasferibili: si vede la trama del denim sotto l'inchiostro. Passa sopra un dettaglio per vederlo a colori.</p>
+        <p>Tutto a mano, senza stampe né trasferibili: si vede la trama del denim sotto l'inchiostro. Passa sopra un
+          dettaglio per vederlo a colori.</p>
       </div>
       <div class="strip">
-        <figure class="duo"><img src="assets/dett-sukuna.jpg" alt="" loading="lazy"><img class="c" src="assets/dett-sukuna.jpg" alt="Dettaglio del ritratto di Sukuna dipinto sulla coscia" loading="lazy"><figcaption>Sukuna, coscia sinistra</figcaption></figure>
-        <figure class="duo"><img src="assets/dett-koi.jpg" alt="" loading="lazy"><img class="c" src="assets/dett-koi.jpg" alt="Dettaglio delle due carpe koi vicino alla tasca" loading="lazy"><figcaption>Koi, sotto la tasca</figcaption></figure>
-        <figure class="duo"><img src="assets/dett-glifi.jpg" alt="" loading="lazy"><img class="c" src="assets/dett-glifi.jpg" alt="Dettaglio della colonna di glifi lungo la gamba" loading="lazy"><figcaption>Glifi, gamba destra</figcaption></figure>
-        <figure class="duo"><img src="assets/dett-profilo.jpg" alt="" loading="lazy"><img class="c" src="assets/dett-profilo.jpg" alt="Dettaglio del profilo disegnato sulla tasca posteriore" loading="lazy"><figcaption>Profilo, tasca sinistra</figcaption></figure>
-        <figure class="duo"><img src="assets/dett-dado.jpg" alt="" loading="lazy"><img class="c" src="assets/dett-dado.jpg" alt="Dettaglio del dado con gli occhi sulla tasca posteriore" loading="lazy"><figcaption>Dado, tasca destra</figcaption></figure>
+        <figure class="duo"><img src="assets/dett-sukuna.jpg" alt="" loading="lazy"><img class="c"
+            src="assets/dett-sukuna.jpg" alt="Dettaglio del ritratto di Sukuna dipinto sulla coscia" loading="lazy">
+          <figcaption>Sukuna, coscia sinistra</figcaption>
+        </figure>
+        <figure class="duo"><img src="assets/dett-koi.jpg" alt="" loading="lazy"><img class="c"
+            src="assets/dett-koi.jpg" alt="Dettaglio delle due carpe koi vicino alla tasca" loading="lazy">
+          <figcaption>Koi, sotto la tasca</figcaption>
+        </figure>
+        <figure class="duo"><img src="assets/dett-glifi.jpg" alt="" loading="lazy"><img class="c"
+            src="assets/dett-glifi.jpg" alt="Dettaglio del Logo lungo la gamba" loading="lazy">
+          <figcaption>Logo, gamba destra</figcaption>
+        </figure>
+        <figure class="duo"><img src="assets/dett-profilo.jpg" alt="" loading="lazy"><img class="c"
+            src="assets/dett-profilo.jpg" alt="Dettaglio del profilo disegnato sulla tasca posteriore" loading="lazy">
+          <figcaption>Profilo, tasca sinistra</figcaption>
+        </figure>
+        <figure class="duo"><img src="assets/dett-dado.jpg" alt="" loading="lazy"><img class="c"
+            src="assets/dett-dado.jpg" alt="Dettaglio del dado con gli occhi sulla tasca posteriore" loading="lazy">
+          <figcaption>Dado, tasca destra</figcaption>
+        </figure>
       </div>
     </section>
 
@@ -172,7 +273,8 @@
     <section class="custom" id="su-misura" aria-labelledby="custom-title">
       <div class="custom-head">
         <h2 id="custom-title">Un design solo tuo</h2>
-        <p>Porti un'idea, anche solo abbozzata. La trasformo in un disegno pensato per il tuo capo: jeans, giacca, borsa o quello che vuoi dipingere.</p>
+        <p>Porti un'idea, anche solo abbozzata. La trasformo in un disegno pensato per il tuo capo: jeans, giacca, borsa
+          o quello che vuoi dipingere.</p>
         <div class="step-stage" aria-hidden="true">
           <figure class="duo on"><img src="assets/dett-profilo.jpg" alt=""></figure>
           <figure class="duo"><img src="assets/dett-dado.jpg" alt=""></figure>
@@ -181,12 +283,26 @@
         </div>
       </div>
       <div class="steps-wrap">
-        <svg class="steps-line" viewBox="0 0 4 100" preserveAspectRatio="none" aria-hidden="true"><path d="M2 0 V100"/></svg>
+        <svg class="steps-line" viewBox="0 0 4 100" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M2 0 V100" />
+        </svg>
         <ol class="steps">
-          <li><span class="n">1</span><h3>Mi racconti l'idea</h3><p>Soggetto, riferimenti, dove vuoi il disegno e quanto grande.</p></li>
-          <li><span class="n">2</span><h3>Ricevi la bozza</h3><p>La sistemiamo insieme finché non ti convince. Solo allora inizio.</p></li>
-          <li><span class="n">3</span><h3>Dipingo il capo</h3><p>Su un capo che mi mandi tu o su uno che scegliamo insieme.</p></li>
-          <li><span class="n">4</span><h3>Lo ricevi</h3><p>Spedizione o consegna a mano, con le indicazioni per lavarlo.</p></li>
+          <li><span class="n">1</span>
+            <h3>Mi racconti l'idea</h3>
+            <p>Soggetto, riferimenti, dove vuoi il disegno e quanto grande.</p>
+          </li>
+          <li><span class="n">2</span>
+            <h3>Ricevi la bozza</h3>
+            <p>La sistemiamo insieme finché non ti convince. Solo allora inizio.</p>
+          </li>
+          <li><span class="n">3</span>
+            <h3>Dipingo il capo</h3>
+            <p>Su un capo che mi mandi tu o su uno che scegliamo insieme.</p>
+          </li>
+          <li><span class="n">4</span>
+            <h3>Lo ricevi</h3>
+            <p>Spedizione o consegna a mano, con le indicazioni per lavarlo.</p>
+          </li>
         </ol>
       </div>
     </section>
@@ -194,21 +310,35 @@
     <!-- Prenotazione -->
     <section class="book" id="prenota" aria-labelledby="book-title">
       <div class="book-head">
-        <h2 id="book-title">Prenota</h2>
-        <p>Compila il modulo e premi invia: la richiesta mi arriva subito. Ti rispondo per confermare disponibilità, tempi e prezzo.</p>
+        <h2 id="book-title">Richiedi il tuo capo</h2>
+        <p>Compila il modulo e premi invia: la richiesta mi arriva subito. Puoi partire da un'idea nuova o dal tema di
+          un paio che hai visto qui. Ti rispondo per bozza, tempi e prezzo.</p>
         <div class="book-visual" aria-hidden="true">
-          <figure class="duo blue v-pezzo"><img src="assets/dett-sukuna.jpg" alt=""></figure>
-          <figure class="duo blue v-custom"><img src="assets/nero-volto.jpg" alt=""></figure>
+          <figure class="duo blue"><img src="assets/nero-volto.jpg" alt=""></figure>
         </div>
       </div>
 
       <form class="form" id="booking" novalidate>
-        <fieldset class="mode">
-          <legend class="sr">Cosa vuoi prenotare</legend>
-          <label><input type="radio" name="mode" value="pezzo" checked><span>Un paio già fatto</span></label>
-          <label><input type="radio" name="mode" value="custom"><span>Un design nuovo</span></label>
-          <i class="mode-pill" aria-hidden="true"></i>
-        </fieldset>
+        <dl class="book-info">
+          <div>
+            <dt>Il capo lo mandi tu</dt>
+            <dd>Così stile, taglia e vestibilità sono esattamente quelli che vuoi, senza sorprese.</dd>
+          </div>
+          <div>
+            <dt>Prezzo da 50 a 180 €</dt>
+            <dd>Si parte da 50 € per piccoli artwork. Il prezzo cresce con quantità, dimensione e difficoltà dei
+              disegni, fino a un massimo di 180 € per un pantalone full custom.</dd>
+          </div>
+          <div>
+            <dt>Bozza gratuita</dt>
+            <dd>Prima di iniziare ti preparo uno sketch del capo, senza costi né impegno. Una volta approvato e iniziato
+              il lavoro non si può più cambiare idea: al massimo piccole modifiche in corso d'opera, se fattibili.</dd>
+          </div>
+          <div>
+            <dt>Nessun rimborso</dt>
+            <dd>Ogni capo è dipinto a mano su misura per te, quindi non è possibile rimborsarlo.</dd>
+          </div>
+        </dl>
 
         <div class="grid">
           <label class="field"><span>Nome</span>
@@ -218,32 +348,16 @@
             <input name="email" type="email" autocomplete="email" required>
             <small class="err" hidden>Inserisci un'email valida, così posso risponderti.</small></label>
 
-          <label class="field only-pezzo wide"><span>Quale capo</span>
-            <select name="paio">
-              <option>Il paio Jujutsu</option>
-            </select></label>
-
-          <fieldset class="field sizes only-pezzo wide">
-            <legend>Taglia in vita</legend>
-            <div class="size-system" role="radiogroup" aria-label="Sistema di taglie">
-              <label><input type="radio" name="sistema" value="IT" checked><span>IT</span></label>
-              <label><input type="radio" name="sistema" value="EU"><span>EU</span></label>
-              <label><input type="radio" name="sistema" value="US"><span>US</span></label>
-              <label><input type="radio" name="sistema" value="UK"><span>UK</span></label>
-            </div>
-            <div class="size-list"></div>
-          </fieldset>
-
-          <label class="field only-custom" hidden><span>Capo</span>
+          <label class="field"><span>Capo</span>
             <select name="capo">
-              <option>Jeans</option><option>Giacca di jeans</option><option>Borsa</option><option>Altro</option>
+              <option>Jeans</option>
+              <option>Giacca di jeans</option>
+              <option>Borsa</option>
+              <option>Altro</option>
             </select></label>
-          <label class="field only-custom" hidden><span>Il capo ce l'hai già?</span>
-            <select name="capo_proprio">
-              <option>Sì, te lo mando io</option><option>No, sceglilo tu</option>
-            </select></label>
-          <label class="field only-custom wide" hidden><span>Cosa vuoi dipinto</span>
-            <textarea name="idea" rows="4" placeholder="Soggetto, stile, posizione sul capo. Le immagini di riferimento potrai mandarmele quando ti rispondo."></textarea></label>
+          <label class="field wide"><span>Cosa vuoi dipinto</span>
+            <textarea name="idea" rows="4"
+              placeholder="Soggetto, stile, posizione sul capo, o cosa cambiare rispetto al paio scelto. Le immagini di riferimento potrai mandarmele quando ti rispondo."></textarea></label>
 
           <label class="field wide"><span>Note <em>(facoltative)</em></span>
             <textarea name="note" rows="3"></textarea></label>
@@ -258,7 +372,8 @@
 
   <footer class="foot">
     <p class="wordmark">Kami</p>
-    <p>Denim dipinto a mano. <a href="https://instagram.com/kami_custooms" rel="noopener">Instagram</a> <a class="mail" href="mailto:kamicustomwear@gmail.com">Email</a></p>
+    <p>Denim dipinto a mano. <a href="https://instagram.com/kami_custooms" rel="noopener">Instagram</a> <a class="mail"
+        href="mailto:kamicustomwear@gmail.com">Email</a></p>
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
@@ -266,4 +381,5 @@
   <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.min.js"></script>
   <script type="module" src="js/main.js"></script>
 </body>
+
 </html>
